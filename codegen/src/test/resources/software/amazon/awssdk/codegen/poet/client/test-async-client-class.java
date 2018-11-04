@@ -89,6 +89,7 @@ import software.amazon.awssdk.services.json.transform.StreamingInputOperationReq
 import software.amazon.awssdk.services.json.transform.StreamingInputOutputOperationRequestMarshaller;
 import software.amazon.awssdk.services.json.transform.StreamingOutputOperationRequestMarshaller;
 import software.amazon.awssdk.utils.CompletableFutureUtils;
+import software.amazon.awssdk.utils.Validate;
 
 /**
  * Internal implementation of {@link JsonAsyncClient}.
@@ -143,6 +144,9 @@ final class DefaultJsonAsyncClient implements JsonAsyncClient {
     @Override
     public CompletableFuture<APostOperationResponse> aPostOperation(APostOperationRequest aPostOperationRequest) {
         try {
+            String hostPrefix = "{StringMember}-foo.";
+            Validate.paramNotBlank(aPostOperationRequest.stringMember(), "StringMember");
+            String resolvedHostExpression = String.format("%s-foo.", aPostOperationRequest.stringMember());
 
             HttpResponseHandler<APostOperationResponse> responseHandler = protocolFactory.createResponseHandler(
                 new JsonOperationMetadata().withPayloadJson(true).withHasStreamingSuccessResponse(false),
@@ -152,7 +156,8 @@ final class DefaultJsonAsyncClient implements JsonAsyncClient {
 
             return clientHandler.execute(new ClientExecutionParams<APostOperationRequest, APostOperationResponse>()
                                              .withMarshaller(new APostOperationRequestMarshaller(protocolFactory)).withResponseHandler(responseHandler)
-                                             .withErrorResponseHandler(errorResponseHandler).withInput(aPostOperationRequest));
+                                             .withErrorResponseHandler(errorResponseHandler).hostPrefixExpression(resolvedHostExpression)
+                                             .withInput(aPostOperationRequest));
         } catch (Throwable t) {
             return CompletableFutureUtils.failedFuture(t);
         }

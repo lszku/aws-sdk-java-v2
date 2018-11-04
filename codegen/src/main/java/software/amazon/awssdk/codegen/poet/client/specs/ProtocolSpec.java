@@ -25,6 +25,7 @@ import software.amazon.awssdk.awscore.client.handler.AwsSyncClientHandler;
 import software.amazon.awssdk.codegen.model.intermediate.IntermediateModel;
 import software.amazon.awssdk.codegen.model.intermediate.OperationModel;
 import software.amazon.awssdk.core.client.handler.SyncClientHandler;
+import software.amazon.awssdk.utils.StringUtils;
 
 public interface ProtocolSpec {
 
@@ -59,5 +60,11 @@ public interface ProtocolSpec {
 
     default List<FieldSpec> additionalFields() {
         return new ArrayList<>();
+    }
+
+    default String hostPrefixExpression(OperationModel opModel) {
+        return opModel.getEndpointTrait() != null && !StringUtils.isEmpty(opModel.getEndpointTrait().getHostPrefix())
+               ? ".hostPrefixExpression(resolvedHostExpression)\n"
+               : "";
     }
 }

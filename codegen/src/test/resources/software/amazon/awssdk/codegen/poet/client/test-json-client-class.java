@@ -53,6 +53,7 @@ import software.amazon.awssdk.services.json.transform.PaginatedOperationWithoutR
 import software.amazon.awssdk.services.json.transform.StreamingInputOperationRequestMarshaller;
 import software.amazon.awssdk.services.json.transform.StreamingInputOutputOperationRequestMarshaller;
 import software.amazon.awssdk.services.json.transform.StreamingOutputOperationRequestMarshaller;
+import software.amazon.awssdk.utils.Validate;
 
 /**
  * Internal implementation of {@link JsonClient}.
@@ -102,6 +103,9 @@ final class DefaultJsonClient implements JsonClient {
     @Override
     public APostOperationResponse aPostOperation(APostOperationRequest aPostOperationRequest) throws InvalidInputException,
                                                                                                      AwsServiceException, SdkClientException, JsonException {
+        String hostPrefix = "{StringMember}-foo.";
+        Validate.paramNotBlank(aPostOperationRequest.stringMember(), "StringMember");
+        String resolvedHostExpression = String.format("%s-foo.", aPostOperationRequest.stringMember());
 
         HttpResponseHandler<APostOperationResponse> responseHandler = protocolFactory.createResponseHandler(
             new JsonOperationMetadata().withPayloadJson(true).withHasStreamingSuccessResponse(false),
@@ -111,7 +115,8 @@ final class DefaultJsonClient implements JsonClient {
 
         return clientHandler.execute(new ClientExecutionParams<APostOperationRequest, APostOperationResponse>()
                                          .withResponseHandler(responseHandler).withErrorResponseHandler(errorResponseHandler)
-                                         .withInput(aPostOperationRequest).withMarshaller(new APostOperationRequestMarshaller(protocolFactory)));
+                                         .hostPrefixExpression(resolvedHostExpression).withInput(aPostOperationRequest)
+                                         .withMarshaller(new APostOperationRequestMarshaller(protocolFactory)));
     }
 
     /**
@@ -591,4 +596,3 @@ final class DefaultJsonClient implements JsonClient {
         return (T) request.toBuilder().overrideConfiguration(overrideConfiguration).build();
     }
 }
-

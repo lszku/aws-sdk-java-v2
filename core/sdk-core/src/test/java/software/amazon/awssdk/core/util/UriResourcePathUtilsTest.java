@@ -15,6 +15,11 @@
 
 package software.amazon.awssdk.core.util;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static software.amazon.awssdk.core.util.UriResourcePathUtils.updateUriHost;
+
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Test;
@@ -104,5 +109,14 @@ public class UriResourcePathUtilsTest {
 
         Assert.assertTrue(request.getParameters().containsKey("param"));
         Assert.assertEquals(Arrays.asList((String) null), request.getParameters().get("param"));
+    }
+
+    @Test
+    public void testUpdateUriHost() throws URISyntaxException {
+        Assert.assertThat(updateUriHost(new URI("https://s3.amazonaws.com/index.html"), "foobar-"),
+                          equalTo(new URI("https://foobar-s3.amazonaws.com/index.html")));
+
+        Assert.assertThat(updateUriHost(new URI("http://user:pass@oldhostname/index.html"), "foobar."),
+                          equalTo(new URI("http://user:pass@foobar.oldhostname/index.html")));
     }
 }
