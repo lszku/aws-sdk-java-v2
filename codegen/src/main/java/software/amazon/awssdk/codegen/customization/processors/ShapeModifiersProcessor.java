@@ -74,6 +74,11 @@ final class ShapeModifiersProcessor implements CodegenCustomizationProcessor {
                             + ", but this shape doesn't exist in the model!");
                 }
 
+                if (modifier.isExcludeShape()) {
+                    serviceModel.getShapes().remove(key);
+                    continue;
+                }
+
                 preprocessModifyShapeMembers(serviceModel, shape, modifier);
             }
         }
@@ -89,7 +94,7 @@ final class ShapeModifiersProcessor implements CodegenCustomizationProcessor {
             String key = entry.getKey();
             ShapeModifier modifier = entry.getValue();
 
-            if (ALL.equals(key)) {
+            if (ALL.equals(key) || modifier.isExcludeShape()) {
                 continue;
             }
 
@@ -111,11 +116,7 @@ final class ShapeModifiersProcessor implements CodegenCustomizationProcessor {
                     shapeModel.getCustomization().setSkipGeneratingUnmarshaller(true);
                 }
 
-                if (modifier.isExcludeShape()) {
-                    shapeModel.getCustomization().setSkipGeneratingModelClass(true);
-                    shapeModel.getCustomization().setSkipGeneratingMarshaller(true);
-                    shapeModel.getCustomization().setSkipGeneratingUnmarshaller(true);
-                } else if (modifier.getModify() != null) {
+                if (modifier.getModify() != null) {
                     // Modifies properties of a member in shape or shape enum.
                     // This customization currently support modifying enum name
                     // and marshall/unmarshall location of a member in the Shape.
